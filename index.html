@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CryptoGauge ₿ — Free Crypto Tools & Calculators</title>
+<meta name="description" content="Free crypto tools: converter, ETH gas tracker, profit calculator, DCA calculator. Real-time prices powered by CoinGecko.">
+<meta name="keywords" content="crypto converter, eth gas tracker, DCA calculator, crypto tools, bitcoin calculator">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><span>₿</span> CryptoGauge</a>
+  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="converter.html">Converter</a></li>
+    <li><a href="gas.html">Gas Tracker</a></li>
+    <li><a href="profit.html">Profit Calc</a></li>
+    <li><a href="dca.html">DCA Calc</a></li>
+  </ul>
+</nav>
+<main>
+  <h1>Your Essential Crypto Toolkit ₿</h1>
+  <p class="subtitle">Free, fast, and accurate tools for every crypto investor.</p>
+  <div class="grid">
+    <a href="converter.html" class="card" style="text-decoration:none;color:inherit">
+      <div class="icon">💱</div>
+      <h3>Crypto Converter</h3>
+      <p>Convert BTC, ETH, SOL and more to USD, EUR, CNY with real-time prices from CoinGecko.</p>
+    </a>
+    <a href="gas.html" class="card" style="text-decoration:none;color:inherit">
+      <div class="icon">⛽</div>
+      <h3>ETH Gas Tracker</h3>
+      <p>Live Ethereum gas prices. Estimate costs for transfers, swaps, and NFT mints.</p>
+    </a>
+    <a href="profit.html" class="card" style="text-decoration:none;color:inherit">
+      <div class="icon">📈</div>
+      <h3>Profit Calculator</h3>
+      <p>Calculate your crypto gains, losses, and ROI including trading fees.</p>
+    </a>
+    <a href="dca.html" class="card" style="text-decoration:none;color:inherit">
+      <div class="icon">🔄</div>
+      <h3>DCA Calculator</h3>
+      <p>See how dollar-cost averaging performs over time for your favorite coins.</p>
+    </a>
+  </div>
+  <div class="card" id="prices">
+    <h3>📊 Live Prices</h3>
+    <p class="loading">Loading prices...</p>
+  </div>
+  <div class="tip-box">
+    <p>Find this useful? Support CryptoGauge with crypto ₿</p>
+    <div class="addr" onclick="navigator.clipboard.writeText('0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823');this.classList.add('copied');this.textContent='Copied!'">0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823</div>
+  </div>
+</main>
+<footer>© 2026 CryptoGauge — Free Crypto Tools</footer>
+<script>
+fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true')
+.then(r=>r.json()).then(d=>{
+  const el=document.getElementById('prices');
+  const fmt=(v)=>'$'+v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const chg=(v)=>`<span class="${v>=0?'positive':'negative'}">${v>=0?'+':''}${v.toFixed(2)}%</span>`;
+  el.innerHTML=`<h3>📊 Live Prices</h3><table><tr><th>Coin</th><th>Price</th><th>24h</th></tr>
+    <tr><td>Bitcoin (BTC)</td><td>${fmt(d.bitcoin.usd)}</td><td>${chg(d.bitcoin.usd_24h_change)}</td></tr>
+    <tr><td>Ethereum (ETH)</td><td>${fmt(d.ethereum.usd)}</td><td>${chg(d.ethereum.usd_24h_change)}</td></tr>
+    <tr><td>Solana (SOL)</td><td>${fmt(d.solana.usd)}</td><td>${chg(d.solana.usd_24h_change)}</td></tr></table>`;
+}).catch(()=>{document.getElementById('prices').innerHTML='<h3>📊 Live Prices</h3><p>Unable to load prices.</p>'});
+</script>
+</body>
+</html>

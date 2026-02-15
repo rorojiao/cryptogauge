@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCA Calculator — CryptoGauge</title>
+<meta name="description" content="Dollar-cost averaging calculator for Bitcoin, Ethereum, Solana. See how DCA performs over time.">
+<meta name="keywords" content="DCA calculator, dollar cost averaging, crypto DCA, bitcoin DCA">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><span>₿</span> CryptoGauge</a>
+  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="converter.html">Converter</a></li>
+    <li><a href="gas.html">Gas Tracker</a></li>
+    <li><a href="profit.html">Profit Calc</a></li>
+    <li><a href="dca.html" class="active">DCA Calc</a></li>
+  </ul>
+</nav>
+<main>
+  <h1>🔄 DCA Calculator</h1>
+  <p class="subtitle">See how dollar-cost averaging would perform</p>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div><label>Cryptocurrency</label>
+        <select id="coin">
+          <option value="bitcoin">Bitcoin (BTC)</option>
+          <option value="ethereum">Ethereum (ETH)</option>
+          <option value="solana">Solana (SOL)</option>
+        </select>
+      </div>
+      <div><label>Investment per Period ($)</label><input type="number" id="amount" value="100" step="any"></div>
+      <div><label>Frequency</label>
+        <select id="freq">
+          <option value="7">Weekly</option>
+          <option value="14">Bi-weekly</option>
+          <option value="30" selected>Monthly</option>
+        </select>
+      </div>
+      <div><label>Duration</label>
+        <select id="duration">
+          <option value="90">3 Months</option>
+          <option value="180">6 Months</option>
+          <option value="365" selected>1 Year</option>
+          <option value="730">2 Years</option>
+          <option value="1095">3 Years</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="calcDCA()">Calculate DCA</button>
+    <div id="result"></div>
+  </div>
+  <div class="card">
+    <h3>📚 What is DCA?</h3>
+    <p style="color:var(--text2);line-height:1.6">Dollar-Cost Averaging (DCA) is an investment strategy where you invest a fixed amount at regular intervals, regardless of price. This reduces the impact of volatility and removes the stress of timing the market.</p>
+  </div>
+  <div class="tip-box">
+    <p>Find this useful? Support CryptoGauge with crypto ₿</p>
+    <div class="addr" onclick="navigator.clipboard.writeText('0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823');this.classList.add('copied');this.textContent='Copied!'">0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823</div>
+  </div>
+</main>
+<footer>© 2026 CryptoGauge — Free Crypto Tools</footer>
+<script>
+async function calcDCA(){
+  const coin=document.getElementById('coin').value;
+  const amount=parseFloat(document.getElementById('amount').value)||0;
+  const freq=parseInt(document.getElementById('freq').value);
+  const days=parseInt(document.getElementById('duration').value);
+  const el=document.getElementById('result');
+  el.innerHTML='<p class="loading" style="margin-top:1rem">Fetching historical data...</p>';
+  try{
+    const r=await fetch(`https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=${days}`);
+    const data=await r.json();
+    const prices=data.prices;
+    const interval=freq*24*60*60*1000;
+    let totalInvested=0, totalCoins=0, purchases=0;
+    let startTime=prices[0][0];
+    let nextBuy=startTime;
+    for(let i=0;i<prices.length;i++){
+      if(prices[i][0]>=nextBuy){
+        totalInvested+=amount;
+        totalCoins+=amount/prices[i][1];
+        purchases++;
+        nextBuy+=interval;
+      }
+    }
+    const currentPrice=prices[prices.length-1][1];
+    const currentValue=totalCoins*currentPrice;
+    const profit=currentValue-totalInvested;
+    const roi=totalInvested>0?((profit/totalInvested)*100):0;
+    const avgCost=totalCoins>0?(totalInvested/totalCoins):0;
+    const cls=profit>=0?'positive':'negative';
+    el.innerHTML=`<div class="result"><table>
+      <tr><td class="label">Total Invested</td><td>$${totalInvested.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+      <tr><td class="label">Coins Accumulated</td><td>${totalCoins.toFixed(6)}</td></tr>
+      <tr><td class="label">Avg Cost per Coin</td><td>$${avgCost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+      <tr><td class="label">Current Price</td><td>$${currentPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+      <tr><td class="label">Current Value</td><td style="font-weight:700">$${currentValue.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+      <tr><td class="label">Profit / Loss</td><td class="${cls}" style="font-size:1.3rem;font-weight:700">${profit>=0?'+':''}$${profit.toFixed(2)}</td></tr>
+      <tr><td class="label">ROI</td><td class="${cls}" style="font-weight:700">${roi>=0?'+':''}${roi.toFixed(2)}%</td></tr>
+      <tr><td class="label">Purchases Made</td><td>${purchases}</td></tr>
+    </table></div>`;
+  }catch(e){
+    el.innerHTML='<p style="color:var(--red);margin-top:1rem">Failed to fetch data. CoinGecko may be rate-limited — try again in a minute.</p>';
+  }
+}
+</script>
+</body>
+</html>

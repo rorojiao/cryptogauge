@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Crypto Converter — CryptoGauge</title>
+<meta name="description" content="Convert Bitcoin, Ethereum, Solana to USD, EUR, CNY with real-time prices.">
+<meta name="keywords" content="crypto converter, bitcoin to usd, eth to usd, sol to usd, cryptocurrency converter">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><span>₿</span> CryptoGauge</a>
+  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="converter.html" class="active">Converter</a></li>
+    <li><a href="gas.html">Gas Tracker</a></li>
+    <li><a href="profit.html">Profit Calc</a></li>
+    <li><a href="dca.html">DCA Calc</a></li>
+  </ul>
+</nav>
+<main>
+  <h1>💱 Crypto Converter</h1>
+  <p class="subtitle">Real-time conversion powered by CoinGecko</p>
+  <div class="card">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div>
+        <label>Amount</label>
+        <input type="number" id="amount" value="1" min="0" step="any">
+      </div>
+      <div>
+        <label>Cryptocurrency</label>
+        <select id="coin">
+          <option value="bitcoin">Bitcoin (BTC)</option>
+          <option value="ethereum">Ethereum (ETH)</option>
+          <option value="solana">Solana (SOL)</option>
+          <option value="binancecoin">BNB</option>
+          <option value="ripple">XRP</option>
+          <option value="cardano">Cardano (ADA)</option>
+          <option value="dogecoin">Dogecoin (DOGE)</option>
+        </select>
+      </div>
+    </div>
+    <button onclick="convert()">Convert</button>
+    <div id="results"></div>
+  </div>
+  <div class="tip-box">
+    <p>Find this useful? Support CryptoGauge with crypto ₿</p>
+    <div class="addr" onclick="navigator.clipboard.writeText('0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823');this.classList.add('copied');this.textContent='Copied!'">0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823</div>
+  </div>
+</main>
+<footer>© 2026 CryptoGauge — Free Crypto Tools</footer>
+<script>
+const fmt=(v,c)=>new Intl.NumberFormat('en-US',{style:'currency',currency:c,minimumFractionDigits:2,maximumFractionDigits:6}).format(v);
+function convert(){
+  const amt=parseFloat(document.getElementById('amount').value)||0;
+  const coin=document.getElementById('coin').value;
+  const el=document.getElementById('results');
+  el.innerHTML='<p class="loading" style="margin-top:1rem">Loading...</p>';
+  fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=usd,eur,cny`)
+  .then(r=>r.json()).then(d=>{
+    const p=d[coin];
+    el.innerHTML=`<div class="result"><table>
+      <tr><td class="label">USD</td><td class="val">${fmt(amt*p.usd,'USD')}</td></tr>
+      <tr><td class="label">EUR</td><td class="val">${fmt(amt*p.eur,'EUR')}</td></tr>
+      <tr><td class="label">CNY</td><td class="val" style="color:var(--orange)">¥${(amt*p.cny).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+    </table><p style="color:var(--text2);font-size:.8rem;margin-top:.75rem">Rate: 1 ${coin} = $${p.usd.toLocaleString()}</p></div>`;
+  }).catch(()=>el.innerHTML='<p style="color:var(--red);margin-top:1rem">Failed to fetch prices. Try again.</p>');
+}
+convert();
+</script>
+</body>
+</html>

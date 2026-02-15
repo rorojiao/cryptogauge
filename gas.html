@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETH Gas Tracker — CryptoGauge</title>
+<meta name="description" content="Live Ethereum gas prices. Estimate transaction costs for transfers, swaps, and NFT mints.">
+<meta name="keywords" content="eth gas tracker, ethereum gas price, gas fees, gwei tracker">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav>
+  <a href="index.html" class="logo"><span>₿</span> CryptoGauge</a>
+  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')">☰</button>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="converter.html">Converter</a></li>
+    <li><a href="gas.html" class="active">Gas Tracker</a></li>
+    <li><a href="profit.html">Profit Calc</a></li>
+    <li><a href="dca.html">DCA Calc</a></li>
+  </ul>
+</nav>
+<main>
+  <h1>⛽ ETH Gas Tracker</h1>
+  <p class="subtitle">Live Ethereum network gas prices</p>
+  <div id="gas-display">
+    <div class="gas-grid">
+      <div class="gas-card low"><div class="speed">🐢 Low</div><div class="gwei" id="low">--</div><div class="speed">Gwei</div></div>
+      <div class="gas-card avg"><div class="speed">🚶 Average</div><div class="gwei" id="avg">--</div><div class="speed">Gwei</div></div>
+      <div class="gas-card high"><div class="speed">🚀 Fast</div><div class="gwei" id="high">--</div><div class="speed">Gwei</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>💰 Estimated Transaction Costs</h3>
+    <p style="color:var(--text2);font-size:.85rem;margin-bottom:1rem">Based on average gas price · ETH price from CoinGecko</p>
+    <table>
+      <tr><th>Operation</th><th>Gas Units</th><th>Est. Cost</th></tr>
+      <tr><td>ETH Transfer</td><td>21,000</td><td id="c1">--</td></tr>
+      <tr><td>ERC-20 Transfer</td><td>65,000</td><td id="c2">--</td></tr>
+      <tr><td>Uniswap Swap</td><td>150,000</td><td id="c3">--</td></tr>
+      <tr><td>NFT Mint</td><td>200,000</td><td id="c4">--</td></tr>
+      <tr><td>OpenSea Sale</td><td>250,000</td><td id="c5">--</td></tr>
+    </table>
+  </div>
+  <div class="tip-box">
+    <p>Find this useful? Support CryptoGauge with crypto ₿</p>
+    <div class="addr" onclick="navigator.clipboard.writeText('0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823');this.classList.add('copied');this.textContent='Copied!'">0xEeD903787Cb86bcCc17777E5C7d10A4c2De43823</div>
+  </div>
+</main>
+<footer>© 2026 CryptoGauge — Free Crypto Tools</footer>
+<script>
+const ops=[21000,65000,150000,200000,250000];
+async function load(){
+  try{
+    const [gasR,priceR]=await Promise.all([
+      fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle').then(r=>r.json()),
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd').then(r=>r.json())
+    ]);
+    const g=gasR.result;
+    document.getElementById('low').textContent=g.SafeGasPrice;
+    document.getElementById('avg').textContent=g.ProposeGasPrice;
+    document.getElementById('high').textContent=g.FastGasPrice;
+    const ethPrice=priceR.ethereum.usd;
+    const avgGwei=parseFloat(g.ProposeGasPrice);
+    ops.forEach((u,i)=>{
+      const cost=(u*avgGwei*1e-9*ethPrice);
+      document.getElementById('c'+(i+1)).textContent='$'+cost.toFixed(2);
+    });
+  }catch(e){
+    document.getElementById('low').textContent='N/A';
+    document.getElementById('avg').textContent='N/A';
+    document.getElementById('high').textContent='N/A';
+  }
+}
+load(); setInterval(load,30000);
+</script>
+</body>
+</html>
